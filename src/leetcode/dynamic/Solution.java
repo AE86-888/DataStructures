@@ -1,6 +1,7 @@
 package leetcode.dynamic;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -15,17 +16,36 @@ public class Solution {
         System.out.println(i);
     }
 
+    //279. 完全平方数
+    public int numSquares(int n) {
+        //dp[i]容量为i的背包，最少需要完全平方数的个数
+        int[] dp = new int[n + 1];
+        //初始化
+        dp[0] = 0;
+        for (int i = 1; i <= n; i++) {
+            dp[i] = Integer.MAX_VALUE;
+        }
+        for (int i = 1; i * i <= n; i++) {
+            for (int j = i * i; j < n + 1; j++) {
+                dp[j] = Math.min(dp[j], dp[j - i * i] + 1);
+            }
+        }
+        return dp[n] == Integer.MAX_VALUE ? 0 : dp[n];
+    }
+
+
     //322. 零钱兑换
     public int coinChange(int[] coins, int amount) {
         //dp[i]表示装满容量为i的背包，需要的最少硬币数量
         int[] dp = new int[amount + 1];
         dp[0] = 0;//初始化
-        for(int i = 1; i <= amount; i++){
+        for (int i = 1; i <= amount; i++) {
             dp[i] = Integer.MAX_VALUE;
         }
-        for(int i = 1; i <= amount; i++){//遍历背包
-            for(int j = 0; j < coins.length; j++){//遍历物品
-                if(coins[j] <= i &&  dp[i - coins[j]] != Integer.MAX_VALUE) dp[i] = Math.min(dp[i], dp[i - coins[j]] + 1);
+        for (int i = 1; i <= amount; i++) {//遍历背包
+            for (int j = 0; j < coins.length; j++) {//遍历物品
+                if (coins[j] <= i && dp[i - coins[j]] != Integer.MAX_VALUE)
+                    dp[i] = Math.min(dp[i], dp[i - coins[j]] + 1);
             }
         }
 
