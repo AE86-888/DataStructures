@@ -1,8 +1,7 @@
 package leetcode.dynamic;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+
+import java.util.*;
 
 /**
  * 动态规划
@@ -10,10 +9,143 @@ import java.util.List;
 public class Solution {
     public static void main(String[] args) {
         Solution solution = new Solution();
-        int[] nums = {2};
-        int target = 3;
-        int i = solution.coinChange(nums, 3);
+        int[] nums = {10, 9, 2, 5, 3, 7, 101, 18};
+        int i = solution.lengthOfLIS(nums);
         System.out.println(i);
+    }
+
+    //300. 最长递增子序列
+    public int lengthOfLIS(int[] nums) {
+        if (nums.length <= 1) return nums.length;
+        //dp[i]表示数组nums索引[0,i]，最长子序列的长度
+        int[] dp = new int[nums.length];
+        int max = nums[0];
+        //初始化
+        Arrays.fill(dp, 1);
+        int result = 0;
+        for (int i = 1; i < nums.length; i++) {
+            for (int j = 0; j < i; j++) {
+                if (nums[i] > nums[j]) dp[i] = Math.max(dp[i], dp[j] + 1);
+                if (dp[i] > result) result = dp[i];
+            }
+        }
+        return result;
+    }
+
+    //121. 买卖股票的最佳时机
+    public int maxProfit(int[] prices) {
+        if (prices == null || prices.length == 1) return 0;
+        //dp[i]表示第i天卖出，获取的最大利润
+        int[] dp = new int[prices.length];
+        int max = 0;
+        for (int i = 1; i < prices.length; i++) {
+            if (dp[i - 1] + prices[i] - prices[i - 1] > 0) {
+                dp[i] = dp[i - 1] + prices[i] - prices[i - 1];
+            }
+            max = dp[i] > max ? dp[i] : max;
+            System.out.println(dp[i]);
+        }
+        return max;
+    }
+
+    //337. 打家劫舍 III
+    public int rob(TreeNode root) {
+        //后序遍历
+        int[] dp = robTree(root);
+        return Math.max(dp[0], dp[1]);
+    }
+
+    /**
+     * 返回数组，数组的第一个值表示不偷当前节点获得的最大金额，第二个值表示偷当前节点获得的最大金额
+     *
+     * @param root
+     * @return
+     */
+    public int[] robTree(TreeNode root) {
+        int[] res = new int[2];
+        if (root == null) return res;
+        if (root.left == null && root.right == null) {
+            res[1] = root.val;
+            return res;
+        }
+        //不偷当前节点
+        int[] left = robTree(root.left);
+        int[] right = robTree(root.right);
+        res[0] = Math.max(left[0], left[1]) + Math.max(right[0], right[1]);
+
+        //偷当前节点
+        res[1] = root.val + left[0] + right[0];
+        return res;
+    }
+
+    private HashMap<TreeNode, Integer> map = new HashMap();
+
+    //方法1：记忆化递推
+    public int rob2(TreeNode root) {
+        if (root == null) return 0;
+        if (root.left == null && root.right == null) return root.val;
+        if (map.keySet().contains(root)) return map.get(root);
+        //不偷当前节点
+        int val1 = 0;
+        if (root.left != null) {
+            val1 += rob(root.left);
+        }
+        if (root.right != null) {
+            val1 += rob(root.right);
+        }
+
+        //偷当前节点
+        int val2 = root.val;
+        if (root.left != null) {
+            val2 += rob(root.left.left);
+            val2 += rob(root.left.right);
+        }
+        if (root.right != null) {
+            val2 += rob(root.right.left);
+            val2 += rob(root.right.right);
+        }
+        map.put(root, Math.max(val1, val2));
+        return Math.max(val1, val2);
+    }
+
+    //213. 打家劫舍 II
+    public int rob(int[] nums) {
+        if (nums.length == 1) return nums[0];
+        if (nums.length == 2) return Math.max(nums[0], nums[1]);
+        //dp[i]表示偷[0,i]的房间，偷盗的最大金额
+        int[] dp = new int[nums.length - 1];
+        dp[0] = nums[0];
+        dp[1] = Math.max(nums[0], nums[1]);
+        //不考虑尾部元素
+        for (int i = 2; i < nums.length - 1; i++) {
+            dp[i] = Math.max(dp[i - 2] + nums[i], dp[i - 1]);
+        }
+
+        //不考虑首部元素
+        int[] dp2 = new int[nums.length];
+        dp2[0] = 0;
+        dp2[1] = nums[1];
+        dp2[2] = Math.max(nums[1], nums[2]);
+        for (int i = 3; i < nums.length; i++) {
+            dp2[i] = Math.max(dp[i - 2] + nums[i], dp[i - 1]);
+        }
+
+        return Math.max(dp[nums.length - 2], dp2[nums.length - 1]);
+    }
+
+    //单词拆分
+    public boolean wordBreak(String s, List<String> wordDict) {
+        boolean[] dp = new boolean[s.length() + 1];
+        dp[0] = true;
+        for (int i = 1; i <= s.length(); i++) {
+            for (int j = 0; j < i; j++) {
+                String sub = s.substring(j, i);
+                if (wordDict.contains(sub) && dp[j]) {
+                    dp[i] = true;
+                }
+            }
+        }
+        return dp[s.length()];
     }
 
     //279. 完全平方数
@@ -269,5 +401,24 @@ public class Solution {
             dp[i] = dp[i - 1] + dp[i - 2];
         }
         return dp[n];
+    }
+}
+
+class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
+
+    TreeNode() {
+    }
+
+    TreeNode(int val) {
+        this.val = val;
+    }
+
+    TreeNode(int val, TreeNode left, TreeNode right) {
+        this.val = val;
+        this.left = left;
+        this.right = right;
     }
 }
